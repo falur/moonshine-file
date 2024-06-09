@@ -25,3 +25,4 @@ SpatieUppyFile::make('Фото', 'photo')
 SpatieUppyFile::make('Фото', 'photo')
     ->allowedFileTypes('video/*')
 ```
+![demo](images/1.jpg)
