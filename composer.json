@@ -29,7 +29,7 @@
     }
   },
   "conflict": {
-    "moonshine/moonshine": "<2.*"
+    "moonshine/moonshine": "<2.0"
   },
   "extra": {
     "laravel": {

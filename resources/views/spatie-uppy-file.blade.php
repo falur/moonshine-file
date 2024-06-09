@@ -1,5 +1,4 @@
 @php /** @var \App\MoonShine\Fields\SpatieUppyFile $element */ @endphp
-@dd($element->id())
 @php
     $column = $element->column();
     $divId = 'uppy-dashboard-' . $column . \Illuminate\Support\Str::random(5);
