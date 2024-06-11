@@ -87,18 +87,25 @@ class SpatieUppyFile extends Field
         return $this;
     }
 
+    /**
+     * @param HasMedia $data
+     * @return mixed
+     */
     protected function resolveAfterApply(mixed $data): mixed
     {
-        /** @var HasMedia $data */
-
-        /** @var Collection<array-key, Media> $existingMedia */
-        $existingMedia = $data->getMedia($this->column());
+        // Если вложенная бульба пока ничего не делаем, т.к реквест приходит неверный здесь хз почему но индексы сбиваются если вложить в json поле, поэтому пока выход сохранять модель как json и не парится
+        if (str_contains($this->requestNameDot(), '.')) {
+            return $data;
+        }
 
         /** @var string $pureValue */
         $pureValue = $this->requestValue();
         if (!$pureValue) {
             return $data;
         }
+
+        /** @var Collection<array-key, Media> $existingMedia */
+        $existingMedia = $data->getMedia($this->column());
 
         /** @var array<array-key, mixed> $value */
         $value = json_decode($pureValue, true);
@@ -129,7 +136,7 @@ class SpatieUppyFile extends Field
 
     protected function resolveOnApply(): ?Closure
     {
-        return static fn ($item) => $item;
+        return fn ($item) => $item;
     }
 
     protected function resolvePreview(): View|string
@@ -137,7 +144,7 @@ class SpatieUppyFile extends Field
         /** @var HasMedia $model */
         $model = $this->getData();
         /** @var Collection<array-key, Media> $mediaCollection */
-        $mediaCollection = $model->getMedia($this->column());
+        $mediaCollection = $model->getMedia($this->nameDot());
 
         if ($mediaCollection->isEmpty()) {
             return '';
@@ -172,5 +179,14 @@ class SpatieUppyFile extends Field
 
         /** @var string $view */
         return $view;
+    }
+
+    protected function prepareFill(array $raw = [], mixed $casted = null): mixed
+    {
+        if ($casted instanceof HasMedia) {
+            return $casted->getMedia($this->name());
+        }
+
+        return parent::prepareFill($raw, $casted);
     }
 }

@@ -1,21 +1,23 @@
 @php /** @var \App\MoonShine\Fields\SpatieUppyFile $element */ @endphp
 @php
     $column = $element->column();
-    $divId = 'uppy-dashboard-' . $column . \Illuminate\Support\Str::random(5);
-    $inputId = 'uppy-dashboard-input-' . $column . \Illuminate\Support\Str::random(5);
+    $parent = $element->parent();
+    $elData = match (true) {
+        $parent instanceof \MoonShine\Fields\Json => $parent,
+        default => $element,
+    };
 @endphp
 
 <div
-    x-cloak
-    x-data='{
-        value: @json($element->getData()->getMedia($column)->toArray()),
+        x-cloak
+        x-data='{
+        value: @json(json_decode($element->value()) ?: []),
         allowedFileTypes: @json($element->allowedFileTypes()),
         maxNumberOfFiles: {{ $element->countFiles() }},
-        target: "#{{ $divId }}",
         endpoint: "{{ route('gt-moonshine-file.upload') }}",
         csrfToken: "{{ csrf_token() }}",
     }'
-    x-init="
+        x-init="
     const uppy = new Uppy.Uppy({
             locale: Uppy.locales.ru_RU,
             restrictions: {
@@ -25,7 +27,7 @@
         })
         .use(Uppy.Dashboard, {
             inline: true,
-            target: target,
+            target: $refs.uppyElement,
             width: '100%',
         })
         .use(Uppy.ImageEditor, {
@@ -45,15 +47,16 @@
             value.push(resp.body);
         }
     });">
-    <div id="{{ $divId }}"></div>
+    <div x-ref="uppyElement"></div>
 
     <div style="margin-bottom: -40px;">
         <input
-            type="text"
-            style="opacity: 0; z-index: -1; appearance: none; position: relative; top: -40px;"
-            name="{{ $column }}"
-            :value="value.length ? JSON.stringify(value) : ''"
-            @required($element->isRequired())
+                {{ $element->attributes()->merge([
+                    'type' => 'text',
+                    'style' => 'opacity: 0; z-index: -1; appearance: none; position: relative; top: -40px;',
+                    'name' => $element->name(),
+                ]) }}
+                :value="value.length ? JSON.stringify(value) : ''"
         />
     </div>
 
@@ -65,19 +68,19 @@
     <div class="flex flex-wrap gap-2 mt-2" :class="value[0]?.mime_type?.search('image') === -1 ? 'flex-col' : 'flex-row'">
         <template x-for="(item, index) in value">
             <div>
-                <template x-if="item.mime_type.search('image') !== -1">
+                <template x-if="item.mime_type?.search('image') !== -1">
                     <div class="flex flex-col"
                          style="align-items: flex-end"
                     >
                         <buttom
-                            type="button"
-                            @click.stop="$dispatch('img-popup', {open: true, src: item.original_url })"
+                                type="button"
+                                @click.stop="$dispatch('img-popup', {open: true, src: item.original_url })"
                         >
                             <img
-                                style="object-fit: cover; width: 200px; height: 120px;"
-                                class="rounded-lg"
-                                :src="item.original_url"
-                                :alt="item.name"
+                                    style="object-fit: cover; width: 200px; height: 120px;"
+                                    class="rounded-lg"
+                                    :src="item.original_url"
+                                    :alt="item.name"
                             >
                         </buttom>
 
@@ -86,12 +89,12 @@
                         </button>
                     </div>
                 </template>
-                <template x-if="item.mime_type.search('image') === -1">
+                <template x-if="item.mime_type?.search('image') === -1">
                     <div class="dropzone-item dropzone-item-file justify-between">
                         <span class="dropzone-file-icon">
                             <x-moonshine::icon
-                                icon="heroicons.document"
-                                size="6"
+                                    icon="heroicons.document"
+                                    size="6"
                             />
                         </span>
                         <a :href="item.original_url" class="dropzone-file-name" x-text="item.name" target="_blank"></a>
