@@ -6,18 +6,24 @@
         $parent instanceof \MoonShine\Fields\Json => $parent,
         default => $element,
     };
+    $value = match (true) {
+        $element->value() instanceof \Illuminate\Support\Collection => $element->value()->toArray(),
+        !$element->value() => [],
+        is_string($element->value()) => json_decode($element->value()),
+        default => $element->value(),
+    }
 @endphp
-
 <div
         x-cloak
         x-data='{
-        value: @json(json_decode($element->value()) ?: []),
+        value: @json($value),
         allowedFileTypes: @json($element->allowedFileTypes()),
         maxNumberOfFiles: {{ $element->countFiles() }},
         endpoint: "{{ route('gt-moonshine-file.upload') }}",
         csrfToken: "{{ csrf_token() }}",
     }'
         x-init="
+        console.log(value)
     const uppy = new Uppy.Uppy({
             locale: Uppy.locales.ru_RU,
             restrictions: {
@@ -55,8 +61,8 @@
                     'type' => 'text',
                     'style' => 'opacity: 0; z-index: -1; appearance: none; position: relative; top: -40px;',
                     'name' => $element->name(),
+                    ':value' => "value.length ? JSON.stringify(value) : ''"
                 ]) }}
-                :value="value.length ? JSON.stringify(value) : ''"
         />
     </div>
 
