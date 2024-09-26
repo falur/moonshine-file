@@ -1,30 +1,16 @@
-@php /** @var \App\MoonShine\Fields\SpatieUppyFile $element */ @endphp
-@php
-    $column = $element->column();
-    $parent = $element->parent();
-    $elData = match (true) {
-        $parent instanceof \MoonShine\Fields\Json => $parent,
-        default => $element,
-    };
-    $value = match (true) {
-        $element->value() instanceof \Illuminate\Support\Collection => $element->value()->toArray(),
-        !$element->value() => [],
-        is_string($element->value()) => json_decode($element->value()),
-        default => $element->value(),
-    }
-@endphp
+@php /** @var \GianTiaga\MoonshineFile\Fields\SpatieUppyFile $element */ @endphp
+
 <div
-        x-cloak
-        x-data='{
-        value: @json($value),
+    x-cloak
+    x-data='{
+        value: @json($value ?: []),
         allowedFileTypes: @json($element->allowedFileTypes()),
         maxNumberOfFiles: {{ $element->countFiles() }},
         endpoint: "{{ route('gt-moonshine-file.upload') }}",
         csrfToken: "{{ csrf_token() }}",
     }'
-        x-init="
-        console.log(value)
-    const uppy = new Uppy.Uppy({
+    x-init="
+        const uppy = new Uppy.Uppy({
             locale: Uppy.locales.ru_RU,
             restrictions: {
                 allowedFileTypes: allowedFileTypes,
@@ -46,21 +32,23 @@
             },
         });
 
-    uppy.on('upload-success', function (_, resp) {
-        if (maxNumberOfFiles === 1 && !!resp.body.id) {
-            value = [resp.body];
-        } else if (resp.body.id) {
-            value.push(resp.body);
-        }
-    });">
+        uppy.on('upload-success', function (_, resp) {
+            if (maxNumberOfFiles === 1 && !!resp.body.id) {
+                value = [resp.body];
+            } else if (resp.body.id) {
+                value.push(resp.body);
+            }
+        });
+    "
+>
     <div x-ref="uppyElement"></div>
 
     <div style="margin-bottom: -40px;">
         <input
-                {{ $element->attributes()->merge([
+                {{ $attributes->merge([
                     'type' => 'text',
                     'style' => 'opacity: 0; z-index: -1; appearance: none; position: relative; top: -40px;',
-                    'name' => $element->name(),
+                    'class' => '',
                     ':value' => "value.length ? JSON.stringify(value) : ''"
                 ]) }}
         />
@@ -99,7 +87,7 @@
                     <div class="dropzone-item dropzone-item-file justify-between">
                         <span class="dropzone-file-icon">
                             <x-moonshine::icon
-                                    icon="heroicons.document"
+                                    icon="document"
                                     size="6"
                             />
                         </span>

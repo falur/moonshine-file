@@ -6,8 +6,8 @@ namespace GianTiaga\MoonshineFile\Http\Controllers;
 
 use GianTiaga\MoonshineFile\Models\Media;
 use Illuminate\Http\UploadedFile;
-use MoonShine\MoonShineRequest;
-use MoonShine\Http\Controllers\MoonShineController;
+use MoonShine\Laravel\Http\Controllers\MoonShineController;
+use MoonShine\Laravel\MoonShineRequest;
 use Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist;
 use Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig;
 use Spatie\MediaLibrary\Support\PathGenerator\PathGenerator;

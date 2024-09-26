@@ -6,10 +6,15 @@ namespace GianTiaga\MoonshineFile\Fields;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
-use MoonShine\Components\Files;
-use MoonShine\Components\Thumbnails;
-use MoonShine\Fields\Field;
 use Closure;
+use MoonShine\AssetManager\Css;
+use MoonShine\AssetManager\Js;
+use MoonShine\Contracts\Core\TypeCasts\DataWrapperContract;
+use MoonShine\UI\Components\Files;
+use MoonShine\UI\Components\Thumbnails;
+use MoonShine\UI\Fields\Field;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -24,9 +29,7 @@ class SpatieUppyFile extends Field
      * @var string[]
      */
     protected array $assets = [
-        'https://releases.transloadit.com/uppy/v3.24.3/uppy.min.css',
-        'https://releases.transloadit.com/uppy/v3.24.3/uppy.min.js',
-        'https://releases.transloadit.com/uppy/locales/v3.3.1/ru_RU.min.js',
+
     ];
 
     /**
@@ -38,6 +41,18 @@ class SpatieUppyFile extends Field
      * @var array<array-key, string>
      */
     protected array $allowedFileTypes = ['*/*'];
+
+    /**
+     * @return array
+     */
+    public function getAssets(): array
+    {
+        return [
+            Css::make('https://releases.transloadit.com/uppy/v3.24.3/uppy.min.css'),
+            Js::make('https://releases.transloadit.com/uppy/v3.24.3/uppy.min.js'),
+            Js::make('https://releases.transloadit.com/uppy/locales/v3.3.1/ru_RU.min.js'),
+        ];
+    }
 
     /**
      * @param  int|null  $value
@@ -93,19 +108,10 @@ class SpatieUppyFile extends Field
      */
     protected function resolveAfterApply(mixed $data): mixed
     {
-        // Если вложенная бульба пока ничего не делаем, т.к реквест приходит неверный здесь хз почему но индексы сбиваются если вложить в json поле, поэтому пока выход сохранять модель как json и не парится
-        if (str_contains($this->requestNameDot(), '.')) {
-            return $data;
-        }
-
-        /** @var string $pureValue */
-        $pureValue = $this->requestValue();
-        if (!$pureValue) {
-            return $data;
-        }
-
         /** @var Collection<array-key, Media> $existingMedia */
-        $existingMedia = $data->getMedia($this->column());
+        $existingMedia = $data->getMedia($this->getColumn());
+
+        $pureValue = $this->getRequestValue() ?: '[]';
 
         /** @var array<array-key, mixed> $value */
         $value = json_decode($pureValue, true);
@@ -124,7 +130,7 @@ class SpatieUppyFile extends Field
 
             /** @var Media $media */
             $media = Media::findOrFail($id);
-            $media->move($data, $this->column());
+            $media->move($data, $this->getColumn());
         }
 
         $existingMedia
@@ -139,12 +145,17 @@ class SpatieUppyFile extends Field
         return fn ($item) => $item;
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws \Throwable
+     */
     protected function resolvePreview(): View|string
     {
         /** @var HasMedia $model */
-        $model = $this->getData();
+        $model = $this->getData()->getOriginal();
         /** @var Collection<array-key, Media> $mediaCollection */
-        $mediaCollection = $model->getMedia($this->nameDot());
+        $mediaCollection = $model->getMedia($this->getColumn());
 
         if ($mediaCollection->isEmpty()) {
             return '';
@@ -152,41 +163,42 @@ class SpatieUppyFile extends Field
 
         /** @var Media $firstMedia */
         $firstMedia = $mediaCollection->first();
-
         $urls = $this->countFiles > 1
             ? $mediaCollection->map(fn (Media $media) => $media->getUrl())->toArray()
             : [$firstMedia->getUrl()];
-        $names = fn (string $filename, int $index = 0) => $mediaCollection->get($index)?->name;
 
         $isCollectionHasNotImage = $mediaCollection
             ->contains(fn (Media $media) => !str_contains($media->mime_type, 'image'));
-
-        /** @var string $view */
-        $view = '';
 
         if ($isCollectionHasNotImage) {
             $view = Files::make(
                 files: $urls,
                 download: false,
-                names: $names,
             )->render();
         } else {
-            $view = Thumbnails::make(
-                valueOrValues: $urls,
-                names: $names,
-            )->render();
+            $view = Thumbnails::make($urls)
+                ->render();
         }
 
         /** @var string $view */
         return $view;
     }
 
-    protected function prepareFill(array $raw = [], mixed $casted = null): mixed
+    protected function prepareFill(array $raw = [], ?DataWrapperContract $casted = null): mixed
     {
-        if ($casted instanceof HasMedia) {
-            return $casted->getMedia($this->name());
+        $model = $casted->getOriginal();
+
+        if ($model instanceof HasMedia) {
+            return $model->getMedia($this->getColumn())->toArray();
         }
 
         return parent::prepareFill($raw, $casted);
+    }
+
+    protected function viewData(): array
+    {
+        return [
+            'element' => $this,
+        ];
     }
 }
