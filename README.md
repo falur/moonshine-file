@@ -5,6 +5,9 @@
 composer require gian_tiaga/moonshine-file
 ```
 
+Версия 1.* для moonshine 2
+Версия 2.* для moonshine 3
+
 ## Usage
 Сначала установите пакет от spatie
 [https://spatie.be/docs/laravel-medialibrary

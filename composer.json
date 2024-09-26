@@ -20,7 +20,7 @@
   },
   "require-dev": {
     "spatie/laravel-medialibrary": "^11.5",
-    "moonshine/moonshine": "^2.14",
+    "moonshine/moonshine": "3.x-dev",
     "laravel/framework": "^11.10"
   },
   "autoload": {
@@ -29,7 +29,7 @@
     }
   },
   "conflict": {
-    "moonshine/moonshine": "<2.0"
+    "moonshine/moonshine": "<3.0"
   },
   "extra": {
     "laravel": {
