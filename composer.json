@@ -11,8 +11,7 @@
   "authors": [
     {
       "name": "Enakaev Ildar",
-      "email": "ienakaev@ya.ru",
-      "homepage": "https://ildar.yoga"
+      "email": "ienakaev@ya.ru"
     }
   ],
   "require": {
@@ -20,7 +19,7 @@
   },
   "require-dev": {
     "spatie/laravel-medialibrary": "^11.5",
-    "moonshine/moonshine": "3.x-dev",
+    "moonshine/moonshine": "4.*",
     "laravel/framework": "^11.10"
   },
   "autoload": {

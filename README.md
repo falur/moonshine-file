@@ -1,21 +1,24 @@
-# Spatie + Uppy поле для загрузки файлов и изображений для Moonshine админ панеле
+# Spatie Media + Uppy for upload files and images for Moonshine admin panel 
 
-## Установка
+## Versions
+
+* Verson 1.* for moonshine 2
+* Verson 2.* for moonshine 3
+* Verson 4.* for moonshine 4
+
+## Install 
 ```shell
 composer require gian_tiaga/moonshine-file
 ```
 
-Версия 1.* для moonshine 2
-Версия 2.* для moonshine 3
-
 ## Usage
-Сначала установите пакет от spatie
+- Install spatie laravel laravel-medialibrary
 [https://spatie.be/docs/laravel-medialibrary
 ](https://spatie.be/docs/laravel-medialibrary)
 
-Потом настройте свои модели
+- Make your models
 
-После в своих ресурсах пожно использовать поле
+- In your resource add
 ```php
 SpatieUppyFile::make('Фото', 'photo')
     ->multiple()
@@ -23,15 +26,11 @@ SpatieUppyFile::make('Фото', 'photo')
     ->image()
 ```
 
-Можно указать нужны mime тип
+Yo can set allowed file types
 ```php
 SpatieUppyFile::make('Фото', 'photo')
     ->allowedFileTypes('video/*')
 ```
 ![demo](images/1.jpg)
 
-Поле можно использовать внутри JSON
-
-Но есть нюанс: 
-
-Значение не будет добавлено в модель ресурса, а сохранится в json как массив с привязкой к общей моделе Media, поэтому нужно указать cast где вы по ид сможете создать модель и пользоваться полями.
+You can use this field in json

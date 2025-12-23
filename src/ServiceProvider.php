@@ -21,6 +21,8 @@ class ServiceProvider extends BaseServiceProvider
             'gt-moonshine-file'
         );
 
+        $this->loadJsonTranslationsFrom(__DIR__ . '/../resources/lang');
+
         \Illuminate\Support\Facades\Route::post(
             'gt-moonshine-file/upload',
             FileUploadController::class,

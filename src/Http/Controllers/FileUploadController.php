@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace GianTiaga\MoonshineFile\Http\Controllers;
 
 use GianTiaga\MoonshineFile\Models\Media;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use MoonShine\Laravel\Http\Controllers\MoonShineController;
 use MoonShine\Laravel\MoonShineRequest;
@@ -19,7 +20,7 @@ class FileUploadController extends MoonShineController
      * @throws FileDoesNotExist
      * @throws FileIsTooBig
      */
-    public function __invoke(MoonShineRequest $request): Response
+    public function __invoke(Request $request): Response
     {
         /** @var UploadedFile $uploadedFile */
         $uploadedFile = $request->file('file');
